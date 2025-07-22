@@ -1,19 +1,28 @@
-import { consultarPorPaymentId, consultarPorOrderNumber } from "./api/consult";
+import Fastify from "fastify";
+import cors from "@fastify/cors";
+import { consultarTransacoesOntem } from "./services/adiq/adiqPayments";
 
-async function testarConsultas() {
-  const paymentId = "1234567890abcdef";
-  const orderNumber = "0000000000001";
-  const data = "20241008";
+const app = Fastify();
+app.register(cors, { origin: true });
+
+app.get("/adiq/pagamentos-ontem", async (req, reply) => {
+  const ontem = new Date();
+  ontem.setDate(ontem.getDate() - 1);
+  const transactionDate = ontem.toISOString().split("T")[0].replace(/-/g, "");
+
+  const pedidos = [
+    { orderNumber: "123456", transactionDate },
+    { orderNumber: "789012", transactionDate },
+  ];
 
   try {
-    const porId = await consultarPorPaymentId(paymentId);
-    console.log("Consulta por PaymentId:\n", porId);
-
-    const porOrder = await consultarPorOrderNumber(orderNumber, data);
-    console.log("Consulta por OrderNumber:\n", porOrder);
-  } catch (err: any) {
-    console.error("Erro ao consultar:", err?.response?.data || err.message);
+    const pagamentos = await consultarTransacoesOntem(pedidos);
+    return pagamentos;
+  } catch (err) {
+    return reply.status(500).send({ error: "Erro ao consultar pagamentos" });
   }
-}
+});
 
-testarConsultas();
+app.listen({ port: 3333 }, () => {
+  console.log("Servidor rodando em http://localhost:3333");
+});
