@@ -1,7 +1,7 @@
 import axios from "axios";
 import dotenv from "dotenv";
 import { getAdiqAccessToken } from "./adiqAuth";
-import { enviarParaOmie } from "../omie/omie";
+import { enviarParaOmie } from "../omie/omieService";
 
 dotenv.config();
 
