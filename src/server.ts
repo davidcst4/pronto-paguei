@@ -1,28 +1,19 @@
 import Fastify from "fastify";
-import cors from "@fastify/cors";
-import { consultarTransacoesOntem } from "./services/adiq/adiqPayments";
+import dotenv from "dotenv";
+import authRoutes from "./routes/auth";
+import transactionRoutes from "./routes/transactions";
 
+dotenv.config();
 const app = Fastify();
-app.register(cors, { origin: true });
 
-app.get("/adiq/pagamentos-ontem", async (req, reply) => {
-  const ontem = new Date();
-  ontem.setDate(ontem.getDate() - 1);
-  const transactionDate = ontem.toISOString().split("T")[0].replace(/-/g, "");
+app.register(authRoutes, { prefix: "/auth" });
+app.register(transactionRoutes, { prefix: "/transactions" });
 
-  const pedidos = [
-    { orderNumber: "123456", transactionDate },
-    { orderNumber: "789012", transactionDate },
-  ];
-
-  try {
-    const pagamentos = await consultarTransacoesOntem(pedidos);
-    return pagamentos;
-  } catch (err) {
-    return reply.status(500).send({ error: "Erro ao consultar pagamentos" });
-  }
+app.get("/", async () => {
+  return "HTTP Server is running...";
 });
 
-app.listen({ port: 3333 }, () => {
-  console.log("Servidor rodando em http://localhost:3333");
+app.listen({ port: 3333 }, (err, address) => {
+  if (err) throw err;
+  console.log(`🚀 HTTP Server ready at ${address}`);
 });
